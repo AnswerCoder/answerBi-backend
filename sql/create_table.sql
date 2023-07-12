@@ -17,7 +17,7 @@ create table if not exists user
     deleted_flag  tinyint       default 0                not null comment '是否删除',
     user_account  varchar(256)                           not null comment '账号',
     user_password varchar(512)                           not null comment '密码',
-    username      varchar(256)                           null comment '用户昵称',
+    user_name      varchar(256)                           null comment '用户昵称',
     user_avatar   varchar(1024)                          null comment '用户头像',
     user_role     varchar(256) default 'user'            not null comment '用户角色：user/admin/ban',
     index idx_userAccount (user_account)
@@ -31,6 +31,7 @@ create table if not exists chart
     updated_time  datetime      null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted_flag  tinyint       default 0         not null comment '是否删除',
     user_id       bigint                          null comment '创建用户 id',
+    chart_name    varchar(128)                    null comment '图表名称',
     goal          text                            null comment '分析目标',
     chart_data    text                            null comment '图表数据',
     chart_type    varchar(128)                    null comment '图表类型',

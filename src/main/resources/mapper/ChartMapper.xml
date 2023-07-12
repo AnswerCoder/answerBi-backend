@@ -2,24 +2,25 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="top.peng.springbootinit.mapper.ChartMapper">
+<mapper namespace="top.peng.answerbi.mapper.ChartMapper">
 
     <resultMap id="BaseResultMap" type="top.peng.answerbi.model.entity.Chart">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="created_time" column="created_time" jdbcType="TIMESTAMP"/>
-            <result property="updated_time" column="updated_time" jdbcType="TIMESTAMP"/>
-            <result property="deleted_flag" column="deleted_flag" jdbcType="TINYINT"/>
-            <result property="user_id" column="user_id" jdbcType="BIGINT"/>
+            <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+            <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+            <result property="deletedFlag" column="deleted_flag" jdbcType="TINYINT"/>
+            <result property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="chartName" column="chart_name" jdbcType="VARCHAR"/>
             <result property="goal" column="goal" jdbcType="VARCHAR"/>
-            <result property="chart_data" column="chart_data" jdbcType="VARCHAR"/>
-            <result property="chart_type" column="chart_type" jdbcType="VARCHAR"/>
-            <result property="gen_chart" column="gen_chart" jdbcType="VARCHAR"/>
-            <result property="gen_result" column="gen_result" jdbcType="VARCHAR"/>
+            <result property="chartData" column="chart_data" jdbcType="VARCHAR"/>
+            <result property="chartType" column="chart_type" jdbcType="VARCHAR"/>
+            <result property="genChart" column="gen_chart" jdbcType="VARCHAR"/>
+            <result property="genResult" column="gen_result" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,created_time,updated_time,
-        deleted_flag,user_id,goal,
+        deleted_flag,user_id,chart_name,goal,
         chart_data,chart_type,gen_chart,
         gen_result
     </sql>

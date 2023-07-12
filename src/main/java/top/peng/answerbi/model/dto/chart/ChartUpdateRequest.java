@@ -40,6 +40,10 @@ public class ChartUpdateRequest implements Serializable {
     @TableLogic
     private Integer deletedFlag;
 
+    /**
+     * 图表名称
+     */
+    private String chartName;
 
     /**
      * 分析目标

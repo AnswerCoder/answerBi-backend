@@ -2,18 +2,18 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="top.peng.springbootinit.mapper.UserMapper">
+<mapper namespace="top.peng.answerbi.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="top.peng.answerbi.model.entity.User">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="created_time" column="created_time" jdbcType="TIMESTAMP"/>
-            <result property="updated_time" column="updated_time" jdbcType="TIMESTAMP"/>
-            <result property="deleted_flag" column="deleted_flag" jdbcType="TINYINT"/>
-            <result property="user_account" column="user_account" jdbcType="VARCHAR"/>
-            <result property="user_password" column="user_password" jdbcType="VARCHAR"/>
-            <result property="username" column="username" jdbcType="VARCHAR"/>
-            <result property="user_avatar" column="user_avatar" jdbcType="VARCHAR"/>
-            <result property="user_role" column="user_role" jdbcType="VARCHAR"/>
+            <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+            <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+            <result property="deletedFlag" column="deleted_flag" jdbcType="TINYINT"/>
+            <result property="userAccount" column="user_account" jdbcType="VARCHAR"/>
+            <result property="userPassword" column="user_password" jdbcType="VARCHAR"/>
+            <result property="userName" column="username" jdbcType="VARCHAR"/>
+            <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+            <result property="userRole" column="user_role" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
