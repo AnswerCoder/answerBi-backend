@@ -269,10 +269,8 @@ public class ChartController {
         //压缩后的数据
         String csvData = ExcelUtils.excelToCsv(multipartFile);
         userInput.append(csvData).append("\n");
-        BiResponse biResponse = new BiResponse();
-        biResponse.setGenChart(userInput.toString());
-        return ResultUtils.success(biResponse);
-        /*String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput.toString());
+
+        String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput.toString());
         BiResponse biResponse = aiManager.aiAnsToBiResp(aiResult);
 
         //插入数据库
@@ -286,7 +284,7 @@ public class ChartController {
         boolean saveResult = chartService.save(chart);
         ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
         biResponse.setChartId(chart.getId());
-        return ResultUtils.success(biResponse);*/
+        return ResultUtils.success(biResponse);
     }
 
 }
