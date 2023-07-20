@@ -17,7 +17,7 @@ public interface ChartService extends IService<Chart> {
     /**
      * 获取查询条件
      *
-     * @param postQueryRequest
+     * @param chartQueryRequest
      * @return
      */
     QueryWrapper<Chart> getQueryWrapper(ChartQueryRequest chartQueryRequest);

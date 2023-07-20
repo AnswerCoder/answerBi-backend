@@ -41,7 +41,7 @@ public class ChartServiceImpl extends ServiceImpl<ChartMapper, Chart>
         String sortOrder = chartQueryRequest.getSortOrder();
 
         queryWrapper.eq(id != null && id > 0, "id", id);
-        queryWrapper.eq(StringUtils.isNotBlank(chartName), "chart_name", goal);
+        queryWrapper.like(StringUtils.isNotBlank(chartName), "chart_name", chartName);
         queryWrapper.eq(StringUtils.isNotBlank(goal), "goal", goal);
         queryWrapper.eq(StringUtils.isNotBlank(chartType), "chart_type", chartType);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "user_id", userId);

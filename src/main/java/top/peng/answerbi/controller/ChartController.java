@@ -3,12 +3,15 @@ package top.peng.answerbi.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import top.peng.answerbi.annotation.AuthCheck;
+import top.peng.answerbi.annotation.RateLimiterTag;
 import top.peng.answerbi.common.CommonResponse;
 import top.peng.answerbi.common.DeleteRequest;
 import top.peng.answerbi.common.ErrorCode;
@@ -41,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.peng.answerbi.utils.ExcelUtils;
+import top.peng.answerbi.utils.ValidUtils;
 
 /**
  * 图表接口
@@ -234,6 +238,7 @@ public class ChartController {
      * @return
      */
     @PostMapping("/gen")
+    @RateLimiterTag(qps = 1.0, timeout = 100)
     public CommonResponse<BiResponse> genChartByAi(@RequestPart("file") MultipartFile multipartFile,
             GenChartByAiRequest genChartByAiRequest, HttpServletRequest request) {
         String chartName = genChartByAiRequest.getChartName();
@@ -245,6 +250,8 @@ public class ChartController {
         ThrowUtils.throwIf(StringUtils.isBlank(goal),ErrorCode.PARAMS_ERROR,"分析目标为空");
         //如果名称不为空，并且名称长度大于100，就抛出异常，并给出提示
         ThrowUtils.throwIf(StringUtils.isNotBlank(chartName) && chartName.length() > 100,ErrorCode.PARAMS_ERROR,"图表名称过长");
+
+        ValidUtils.validFile(multipartFile, 1, Arrays.asList("jpeg", "jpg", "svg", "png", "webp","xls","xlsx"));
 
         //通过request对象拿到用户id(必须登录才能使用)
         User loginUser = userService.getLoginUser(request);
@@ -262,8 +269,10 @@ public class ChartController {
         //压缩后的数据
         String csvData = ExcelUtils.excelToCsv(multipartFile);
         userInput.append(csvData).append("\n");
-
-        String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput.toString());
+        BiResponse biResponse = new BiResponse();
+        biResponse.setGenChart(userInput.toString());
+        return ResultUtils.success(biResponse);
+        /*String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput.toString());
         BiResponse biResponse = aiManager.aiAnsToBiResp(aiResult);
 
         //插入数据库
@@ -277,7 +286,7 @@ public class ChartController {
         boolean saveResult = chartService.save(chart);
         ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
         biResponse.setChartId(chart.getId());
-        return ResultUtils.success(biResponse);
+        return ResultUtils.success(biResponse);*/
     }
 
 }

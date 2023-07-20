@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import top.peng.answerbi.utils.ValidUtils;
 
 /**
  * 文件接口
@@ -91,18 +92,8 @@ public class FileController {
      * @param fileUploadBizEnum 业务类型
      */
     private void validFile(MultipartFile multipartFile, FileUploadBizEnum fileUploadBizEnum) {
-        // 文件大小
-        long fileSize = multipartFile.getSize();
-        // 文件后缀
-        String fileSuffix = FileUtil.getSuffix(multipartFile.getOriginalFilename());
-        final long ONE_M = 1024 * 1024L;
         if (FileUploadBizEnum.USER_AVATAR.equals(fileUploadBizEnum)) {
-            if (fileSize > ONE_M) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过 1M");
-            }
-            if (!Arrays.asList("jpeg", "jpg", "svg", "png", "webp").contains(fileSuffix)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件类型错误");
-            }
+            ValidUtils.validFile(multipartFile, 1, Arrays.asList("jpeg", "jpg", "svg", "png", "webp"));
         }
     }
 }
