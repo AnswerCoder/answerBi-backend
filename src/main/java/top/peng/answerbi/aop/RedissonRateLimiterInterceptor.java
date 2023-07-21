@@ -20,14 +20,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import top.peng.answerbi.annotation.RateLimiterTag;
+import top.peng.answerbi.annotation.GuavaRateLimiter;
+import top.peng.answerbi.annotation.RedissonRateLimiter;
 import top.peng.answerbi.common.ErrorCode;
 import top.peng.answerbi.exception.ThrowUtils;
+import top.peng.answerbi.manager.RedisLimiterManager;
 import top.peng.answerbi.model.entity.User;
 import top.peng.answerbi.service.UserService;
 
 /**
- * RateLimiterInterceptor 限流切面
+ * RedissonRateLimiterInterceptor 分布式限流切面
  *
  * @author yunpeng
  * @version 1.0 2023/7/20
@@ -35,14 +37,17 @@ import top.peng.answerbi.service.UserService;
 @Slf4j
 @Aspect
 @Component
-public class RateLimiterInterceptor {
+public class RedissonRateLimiterInterceptor {
     @Resource
     private UserService userService;
 
+    @Resource
+    private RedisLimiterManager redisLimiterManager;
+
     private static final ConcurrentMap<String, RateLimiter> RATE_LIMITER_CACHE = new ConcurrentHashMap<>();
 
-    @Around("@annotation(rateLimiterTag)")
-    public Object doInterceptor(ProceedingJoinPoint point, RateLimiterTag rateLimiterTag) throws Throwable {
+    @Around("@annotation(rRateLimiter)")
+    public Object doInterceptor(ProceedingJoinPoint point, RedissonRateLimiter rRateLimiter) throws Throwable {
 
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
@@ -51,22 +56,8 @@ public class RateLimiterInterceptor {
         // 当前请求方法
         Method method = ((MethodSignature) point.getSignature()).getMethod();
         String key = loginUser.getId() + "#" + method.getName();
-        if (rateLimiterTag != null && rateLimiterTag.qps() > RateLimiterTag.NOT_LIMITED) {
-            double qps = rateLimiterTag.qps();
-
-            if (RATE_LIMITER_CACHE.get(key) == null) {
-                // 初始化 QPS
-                RATE_LIMITER_CACHE.put(key, RateLimiter.create(qps));
-            }
-
-            log.debug("【{}】每个用户的QPS设置为: {}", method.getName(), RATE_LIMITER_CACHE.get(key).getRate());
-            // 尝试获取令牌
-            if (RATE_LIMITER_CACHE.get(key) != null){
-                RateLimiter limiter = RATE_LIMITER_CACHE.get(key);
-                ThrowUtils.throwIf(
-                        !limiter.tryAcquire(rateLimiterTag.timeout(), rateLimiterTag.timeUnit()),
-                        ErrorCode.TOO_MANY_REQUEST);
-            }
+        if (rRateLimiter != null && rRateLimiter.qps() > RedissonRateLimiter.NOT_LIMITED) {
+            redisLimiterManager.doRateLimit(key, rRateLimiter.qps());
         }
         return point.proceed();
     }

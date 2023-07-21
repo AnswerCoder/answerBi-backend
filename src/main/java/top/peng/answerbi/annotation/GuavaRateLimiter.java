@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 /**
- * RateLimiter 限流注解
+ * GuavaRateLimiter 单机限流注解   与  RedissonRateLimiter 二选一使用即可
  *
  * @author yunpeng
  * @version 1.0 2023/7/20
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RateLimiterTag {
+public @interface GuavaRateLimiter {
     int NOT_LIMITED = 0;
     /**
      * 用户qps， 每个用户每秒的请求限制

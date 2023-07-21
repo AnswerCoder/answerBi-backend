@@ -2,22 +2,18 @@ package top.peng.answerbi.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
-import java.io.File;
 import java.util.Arrays;
-import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.util.StringUtil;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import top.peng.answerbi.annotation.AuthCheck;
-import top.peng.answerbi.annotation.RateLimiterTag;
+import top.peng.answerbi.annotation.GuavaRateLimiter;
+import top.peng.answerbi.annotation.RedissonRateLimiter;
 import top.peng.answerbi.common.CommonResponse;
 import top.peng.answerbi.common.DeleteRequest;
 import top.peng.answerbi.common.ErrorCode;
 import top.peng.answerbi.common.ResultUtils;
 import top.peng.answerbi.constant.BiConstant;
-import top.peng.answerbi.constant.FileConstant;
 import top.peng.answerbi.constant.UserConstant;
 import top.peng.answerbi.exception.BusinessException;
 import top.peng.answerbi.exception.ThrowUtils;
@@ -27,10 +23,8 @@ import top.peng.answerbi.model.dto.chart.ChartEditRequest;
 import top.peng.answerbi.model.dto.chart.ChartQueryRequest;
 import top.peng.answerbi.model.dto.chart.ChartUpdateRequest;
 import top.peng.answerbi.model.dto.chart.GenChartByAiRequest;
-import top.peng.answerbi.model.dto.file.UploadFileRequest;
 import top.peng.answerbi.model.entity.Chart;
 import top.peng.answerbi.model.entity.User;
-import top.peng.answerbi.model.enums.FileUploadBizEnum;
 import top.peng.answerbi.model.vo.BiResponse;
 import top.peng.answerbi.service.ChartService;
 import top.peng.answerbi.service.UserService;
@@ -238,7 +232,7 @@ public class ChartController {
      * @return
      */
     @PostMapping("/gen")
-    @RateLimiterTag(qps = 1.0, timeout = 100)
+    @RedissonRateLimiter(qps = 1)
     public CommonResponse<BiResponse> genChartByAi(@RequestPart("file") MultipartFile multipartFile,
             GenChartByAiRequest genChartByAiRequest, HttpServletRequest request) {
         String chartName = genChartByAiRequest.getChartName();
@@ -269,7 +263,6 @@ public class ChartController {
         //压缩后的数据
         String csvData = ExcelUtils.excelToCsv(multipartFile);
         userInput.append(csvData).append("\n");
-
         String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput.toString());
         BiResponse biResponse = aiManager.aiAnsToBiResp(aiResult);
 
