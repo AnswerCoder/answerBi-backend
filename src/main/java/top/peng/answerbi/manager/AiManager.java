@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import top.peng.answerbi.common.ErrorCode;
 import top.peng.answerbi.constant.BiConstant;
+import top.peng.answerbi.exception.BusinessException;
 import top.peng.answerbi.exception.ThrowUtils;
 import top.peng.answerbi.model.vo.BiResponse;
 
@@ -52,7 +53,7 @@ public class AiManager {
      * @param aiAnswer  AI 对话 结果
      * @return BiResponse对象
      */
-    public BiResponse aiAnsToBiResp(String aiAnswer){
+    public BiResponse aiAnsToBiResp(String aiAnswer) throws BusinessException {
         String[] aiResultSplit = aiAnswer.split(BiConstant.BI_RESULT_SEPARATOR);
         ThrowUtils.throwIf(aiResultSplit.length < 3,ErrorCode.SYSTEM_ERROR,"AI 生成错误");
         BiResponse biResponse = new BiResponse();

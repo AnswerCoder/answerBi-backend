@@ -73,6 +73,16 @@ public class Chart implements Serializable {
      */
     private String genResult;
 
+    /**
+     * 任务状态
+     */
+    private String status;
+
+    /**
+     * 执行信息
+     */
+    private String execMessage;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

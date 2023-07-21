@@ -37,5 +37,7 @@ create table if not exists chart
     chart_type    varchar(128)                    null comment '图表类型',
     gen_chart     text                            null comment '生成的图表数据',
     gen_result    text                            null comment '生成的分析结论',
+    status        varchar(128)  not null default 'wait' comment '任务状态,取值wait、running、succeed、failed',
+    exec_message  text                            null comment '执行信息',
     index idx_userId (user_id)
 ) comment '图表信息表' collate = utf8mb4_unicode_ci;

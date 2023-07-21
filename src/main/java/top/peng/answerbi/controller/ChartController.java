@@ -1,13 +1,25 @@
 package top.peng.answerbi.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.gson.Gson;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import top.peng.answerbi.annotation.AuthCheck;
-import top.peng.answerbi.annotation.GuavaRateLimiter;
 import top.peng.answerbi.annotation.RedissonRateLimiter;
 import top.peng.answerbi.common.CommonResponse;
 import top.peng.answerbi.common.DeleteRequest;
@@ -25,18 +37,10 @@ import top.peng.answerbi.model.dto.chart.ChartUpdateRequest;
 import top.peng.answerbi.model.dto.chart.GenChartByAiRequest;
 import top.peng.answerbi.model.entity.Chart;
 import top.peng.answerbi.model.entity.User;
+import top.peng.answerbi.model.enums.BiTaskStatusEnum;
 import top.peng.answerbi.model.vo.BiResponse;
 import top.peng.answerbi.service.ChartService;
 import top.peng.answerbi.service.UserService;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import top.peng.answerbi.utils.ExcelUtils;
 import top.peng.answerbi.utils.ValidUtils;
 
@@ -60,7 +64,8 @@ public class ChartController {
     @Resource
     private AiManager aiManager;
 
-    private final static Gson GSON = new Gson();
+    @Resource
+    private ThreadPoolExecutor threadPoolExecutor;
 
     // region 增删改查
 
@@ -224,7 +229,7 @@ public class ChartController {
     }
 
     /**
-     * 智能分析
+     * 智能分析 (同步)
      *
      * @param multipartFile
      * @param genChartByAiRequest
@@ -235,6 +240,87 @@ public class ChartController {
     @RedissonRateLimiter(qps = 1)
     public CommonResponse<BiResponse> genChartByAi(@RequestPart("file") MultipartFile multipartFile,
             GenChartByAiRequest genChartByAiRequest, HttpServletRequest request) {
+
+        //生成参数
+        Map<String, Object> aiMsgAndChartData = genAiMsgAndChartData(genChartByAiRequest, multipartFile, request);
+        String userInput = (String) aiMsgAndChartData.get("userInput");
+        Chart chart = (Chart) aiMsgAndChartData.get("chartObj");
+
+        //调用AI
+        String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput);
+        BiResponse biResponse = aiManager.aiAnsToBiResp(aiResult);
+
+        //插入数据库
+        BeanUtils.copyProperties(biResponse,chart);
+        chart.setStatus(BiTaskStatusEnum.SUCCEED.getValue());
+        boolean saveResult = chartService.save(chart);
+        ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
+        biResponse.setChartId(chart.getId());
+        return ResultUtils.success(biResponse);
+    }
+
+
+    /**
+     * 智能分析 (异步)
+     *
+     * @param multipartFile
+     * @param genChartByAiRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/gen/async")
+    @RedissonRateLimiter(qps = 1)
+    public CommonResponse<BiResponse> genChartByAiAsync(@RequestPart("file") MultipartFile multipartFile,
+            GenChartByAiRequest genChartByAiRequest, HttpServletRequest request) {
+
+        //生成参数
+        Map<String, Object> aiMsgAndChartData = genAiMsgAndChartData(genChartByAiRequest, multipartFile, request);
+        String userInput = (String) aiMsgAndChartData.get("userInput");
+        Chart chart = (Chart) aiMsgAndChartData.get("chartObj");
+
+        //先插入数据库, 状态为排队中
+        chart.setStatus(BiTaskStatusEnum.WAIT.getValue());
+        boolean saveResult = chartService.save(chart);
+        ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
+
+        AtomicReference<BiResponse> ResBiResponse = new AtomicReference<>(new BiResponse());
+        //创建线程任务
+        CompletableFuture.runAsync(() -> {
+            //先修改图表任务状态为“执行中”;
+            handleChartStatusUpdate(chart.getId(),BiTaskStatusEnum.RUNNING.getValue(), "");
+
+            //调用AI
+            String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput);
+            BiResponse biResponse;
+            try {
+                biResponse = aiManager.aiAnsToBiResp(aiResult);
+            } catch (BusinessException e) {
+                //执行失败，状态修改为“失败”,记录任务失败信息
+                handleChartStatusUpdate(chart.getId(),BiTaskStatusEnum.FAILED.getValue(), e.getMessage());
+                throw e;
+            }
+            //执行成功后，修改为“已完成”、保存执行结果
+            biResponse.setChartId(chart.getId());
+            handleChartSuccessStatusUpdate(biResponse);
+            ResBiResponse.set(biResponse);
+        }, threadPoolExecutor);
+
+        return ResultUtils.success(ResBiResponse.get());
+    }
+
+    /**
+     * 根据用户输入构建 要发送给AI的消息 和 要存入数据库的 Chart 对象
+     *
+     * @param genChartByAiRequest
+     * @param multipartFile
+     * @param request
+     * @return
+     */
+    private Map<String,Object> genAiMsgAndChartData(GenChartByAiRequest genChartByAiRequest,MultipartFile multipartFile, HttpServletRequest request){
+
+        //通过request对象拿到用户id(必须登录才能使用)
+        User loginUser = userService.getLoginUser(request);
+
         String chartName = genChartByAiRequest.getChartName();
         String goal = genChartByAiRequest.getGoal();
         String chartType = genChartByAiRequest.getChartType();
@@ -244,11 +330,7 @@ public class ChartController {
         ThrowUtils.throwIf(StringUtils.isBlank(goal),ErrorCode.PARAMS_ERROR,"分析目标为空");
         //如果名称不为空，并且名称长度大于100，就抛出异常，并给出提示
         ThrowUtils.throwIf(StringUtils.isNotBlank(chartName) && chartName.length() > 100,ErrorCode.PARAMS_ERROR,"图表名称过长");
-
-        ValidUtils.validFile(multipartFile, 1, Arrays.asList("jpeg", "jpg", "svg", "png", "webp","xls","xlsx"));
-
-        //通过request对象拿到用户id(必须登录才能使用)
-        User loginUser = userService.getLoginUser(request);
+        ValidUtils.validFile(multipartFile, 1, Arrays.asList("xls","xlsx"));
 
         //用户输入
         StringBuilder userInput = new StringBuilder();
@@ -263,21 +345,41 @@ public class ChartController {
         //压缩后的数据
         String csvData = ExcelUtils.excelToCsv(multipartFile);
         userInput.append(csvData).append("\n");
-        String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput.toString());
-        BiResponse biResponse = aiManager.aiAnsToBiResp(aiResult);
 
-        //插入数据库
         Chart chart = new Chart();
-        BeanUtils.copyProperties(biResponse,chart);
         chart.setChartName(chartName);
         chart.setGoal(goal);
         chart.setChartType(chartType);
         chart.setChartData(csvData);
         chart.setUserId(loginUser.getId());
-        boolean saveResult = chartService.save(chart);
-        ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
-        biResponse.setChartId(chart.getId());
-        return ResultUtils.success(biResponse);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("userInput",userInput.toString());
+        result.put("chartObj", chart);
+        return result;
+    }
+
+    private void handleChartStatusUpdate(long chartId,String status,String execMessage){
+        Chart updateChart = new Chart();
+        updateChart.setId(chartId);
+        updateChart.setStatus(status);
+        updateChart.setExecMessage(execMessage);
+        boolean updateResult = chartService.updateById(updateChart);
+        if (!updateResult){
+            log.error("更新图表[{}]状态失败", chartId);
+        }
+    }
+
+    private void handleChartSuccessStatusUpdate(BiResponse biResponse){
+        Chart updateChart = new Chart();
+        updateChart.setId(biResponse.getChartId());
+        updateChart.setStatus(BiTaskStatusEnum.SUCCEED.getValue());
+        updateChart.setGenChart(biResponse.getGenChart());
+        updateChart.setGenResult(biResponse.getGenResult());
+        boolean updateResult = chartService.updateById(updateChart);
+        if (!updateResult){
+            log.error("更新图表[{}]结果失败", biResponse.getChartId());
+        }
     }
 
 }
