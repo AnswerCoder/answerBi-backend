@@ -2,14 +2,18 @@ package top.peng.answerbi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import top.peng.answerbi.constant.CommonConstant;
+import top.peng.answerbi.mapper.ChartMapper;
 import top.peng.answerbi.model.dto.chart.ChartQueryRequest;
 import top.peng.answerbi.model.entity.Chart;
+import top.peng.answerbi.model.enums.BiTaskStatusEnum;
+import top.peng.answerbi.model.vo.BiResponse;
 import top.peng.answerbi.service.ChartService;
-import top.peng.answerbi.mapper.ChartMapper;
-import org.springframework.stereotype.Service;
 import top.peng.answerbi.utils.SqlUtils;
 
 /**
@@ -18,8 +22,50 @@ import top.peng.answerbi.utils.SqlUtils;
 * @createDate 2023-07-10 16:45:42
 */
 @Service
+@Slf4j
 public class ChartServiceImpl extends ServiceImpl<ChartMapper, Chart>
     implements ChartService{
+
+    /**
+     * 更新图表状态
+     *
+     * @param chartId
+     * @param status
+     * @param execMessage
+     */
+    @Override
+    @Transactional(rollbackFor = { Exception.class })
+    public boolean updateChartStatus(long chartId, String status, String execMessage) {
+        Chart updateChart = new Chart();
+        updateChart.setId(chartId);
+        updateChart.setStatus(status);
+        updateChart.setExecMessage(execMessage);
+        boolean updateResult = this.updateById(updateChart);
+        if (!updateResult){
+            log.error("更新图表[{}]状态失败", chartId);
+        }
+        return updateResult;
+    }
+
+    /**
+     * 更新图表生成成功结果
+     *
+     * @param biResponse
+     */
+    @Override
+    @Transactional(rollbackFor = { Exception.class })
+    public boolean updateChartSucceedResult(BiResponse biResponse) {
+        Chart updateChart = new Chart();
+        updateChart.setId(biResponse.getChartId());
+        updateChart.setStatus(BiTaskStatusEnum.SUCCEED.getValue());
+        updateChart.setGenChart(biResponse.getGenChart());
+        updateChart.setGenResult(biResponse.getGenResult());
+        boolean updateResult = this.updateById(updateChart);
+        if (!updateResult){
+            log.error("更新图表[{}]结果失败", biResponse.getChartId());
+        }
+        return updateResult;
+    }
 
     /**
      * 获取查询条件

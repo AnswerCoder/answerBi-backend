@@ -6,13 +6,10 @@
 package top.peng.answerbi.utils;
 
 import cn.hutool.core.io.FileUtil;
-import java.util.Arrays;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import top.peng.answerbi.common.ErrorCode;
-import top.peng.answerbi.exception.BusinessException;
 import top.peng.answerbi.exception.ThrowUtils;
-import top.peng.answerbi.model.enums.FileUploadBizEnum;
 
 /**
  * ValidUtils 校验工具类

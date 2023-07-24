@@ -1,11 +1,10 @@
 package top.peng.answerbi.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import top.peng.answerbi.model.dto.chart.ChartQueryRequest;
-import top.peng.answerbi.model.dto.post.PostQueryRequest;
-import top.peng.answerbi.model.entity.Chart;
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.peng.answerbi.model.entity.Post;
+import top.peng.answerbi.model.dto.chart.ChartQueryRequest;
+import top.peng.answerbi.model.entity.Chart;
+import top.peng.answerbi.model.vo.BiResponse;
 
 /**
 * @author yunpeng.zhang
@@ -13,6 +12,21 @@ import top.peng.answerbi.model.entity.Post;
 * @createDate 2023-07-10 16:45:42
 */
 public interface ChartService extends IService<Chart> {
+
+    /**
+     * 更新图表状态
+     * @param chartId
+     * @param status
+     * @param execMessage
+     */
+    boolean updateChartStatus(long chartId,String status,String execMessage);
+
+    /**
+     * 更新图表生成成功结果
+     * @param biResponse
+     */
+    boolean updateChartSucceedResult(BiResponse biResponse);
+
 
     /**
      * 获取查询条件
