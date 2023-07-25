@@ -1,6 +1,7 @@
 package top.peng.answerbi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -36,11 +37,11 @@ public class ChartServiceImpl extends ServiceImpl<ChartMapper, Chart>
     @Override
     @Transactional(rollbackFor = { Exception.class })
     public boolean updateChartStatus(long chartId, String status, String execMessage) {
-        Chart updateChart = new Chart();
-        updateChart.setId(chartId);
-        updateChart.setStatus(status);
-        updateChart.setExecMessage(execMessage);
-        boolean updateResult = this.updateById(updateChart);
+        LambdaUpdateWrapper<Chart> wrapper = new LambdaUpdateWrapper<Chart>()
+                .set(Chart::getStatus, status)
+                .set(Chart::getExecMessage,execMessage)
+                .eq(Chart::getId, chartId);
+        boolean updateResult = this.update(wrapper);
         if (!updateResult){
             log.error("更新图表[{}]状态失败", chartId);
         }
@@ -55,12 +56,13 @@ public class ChartServiceImpl extends ServiceImpl<ChartMapper, Chart>
     @Override
     @Transactional(rollbackFor = { Exception.class })
     public boolean updateChartSucceedResult(BiResponse biResponse) {
-        Chart updateChart = new Chart();
-        updateChart.setId(biResponse.getChartId());
-        updateChart.setStatus(BiTaskStatusEnum.SUCCEED.getValue());
-        updateChart.setGenChart(biResponse.getGenChart());
-        updateChart.setGenResult(biResponse.getGenResult());
-        boolean updateResult = this.updateById(updateChart);
+        LambdaUpdateWrapper<Chart> wrapper = new LambdaUpdateWrapper<Chart>()
+                .set(Chart::getStatus, BiTaskStatusEnum.SUCCEED.getValue())
+                .set(Chart::getExecMessage,null)
+                .set(Chart::getGenChart, biResponse.getGenChart())
+                .set(Chart::getGenResult, biResponse.getGenResult())
+                .eq(Chart::getId, biResponse.getChartId());
+        boolean updateResult = this.update(wrapper);
         if (!updateResult){
             log.error("更新图表[{}]结果失败", biResponse.getChartId());
         }

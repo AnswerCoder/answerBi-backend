@@ -337,6 +337,26 @@ public class ChartController {
     }
 
     /**
+     * 重新生成
+     *
+     * @param chartId
+     * @return
+     */
+    @PostMapping("/regen")
+    @RedissonRateLimiter(qps = 1)
+    public CommonResponse<BiResponse> regenChartByAiAsyncMq(Long chartId) {
+        ThrowUtils.throwIf(chartId == null, ErrorCode.PARAMS_ERROR, "数据不存在");
+        //更新状态为等待中
+        boolean update = chartService.updateChartStatus(chartId, BiTaskStatusEnum.WAIT.getValue(), null);
+        ThrowUtils.throwIf(!update, ErrorCode.SYSTEM_ERROR, "图表状态更新失败");
+
+        biMessageProducer.sendMessage(String.valueOf(chartId));
+        BiResponse biResponse = new BiResponse();
+        biResponse.setChartId(chartId);
+        return ResultUtils.success(biResponse);
+    }
+
+    /**
      * 预处理请求  根据用户输入构建 要存入数据库的 Chart 对象
      *
      * @param genChartByAiRequest

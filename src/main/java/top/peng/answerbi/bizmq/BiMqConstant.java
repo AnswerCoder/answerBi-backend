@@ -12,6 +12,12 @@ package top.peng.answerbi.bizmq;
  * @version 1.0 2023/7/24
  */
 public interface BiMqConstant {
+    String BI_DLX_EXCHANGE_NAME = "bi_dlx_exchange";
+
+    String BI_DLX_QUEUE_NAME = "bi_dlx_queue";
+
+    String BI_DLX_ROUTING_KEY = "bi_dlx_routingKey";
+
     String BI_EXCHANGE_NAME = "bi_exchange";
 
     String BI_QUEUE_NAME = "bi_queue";
