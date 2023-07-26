@@ -86,7 +86,7 @@ spring:
 @SpringBootApplication
 ```
 #### RabbitMq
-1）修改 `application.yml` 的 RabbitMq 配置为你自己的
+修改 `application.yml` 的 RabbitMq 配置为你自己的
 ```yml
 spring:
   rabbitmq:
@@ -94,6 +94,15 @@ spring:
     port: 5672
     username: guest
     password: guest
+```
+
+#### 鱼聪明AI
+修改 `application.yml` 的 鱼聪明AI 配置为你自己的
+```yml
+yuapi:
+  client:
+    access-key: xxx
+    secret-key: xxx
 ```
 
 配置完成启动项目，访问 `http://localhost:8101/api/doc.html` 即可打开接口文档
