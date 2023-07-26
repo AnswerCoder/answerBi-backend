@@ -10,7 +10,7 @@
 - MyBatis + MyBatis Plus 数据访问框架
 - 消息队列（RabbitMQ）
 - 限流(实现了分别基于Guava和Redisson的单机和分布式两种限流)
-- AI能力 (Open AI接口 / **[鱼聪明AI SDK](https://www.yucongming.com/dev)** )
+- AI能力 (Open AI接口 / **[鱼聪明AI SDK](https://github.com/liyupi/yucongming-java-sdk)** )
 - Easy Excel
 - Swagger + Knife4j 接口文档
 - Hutool 工具库
