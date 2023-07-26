@@ -15,7 +15,6 @@ spring:
     # 30 天过期
     timeout: 2592000
   # 数据库配置
-  # todo 需替换配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/my_db
@@ -28,22 +27,17 @@ spring:
     port: 6379
     timeout: 5000
     password: 123456
-  # Elasticsearch 配置
-  # todo 需替换配置，然后取消注释
-#  elasticsearch:
-#    uris: http://localhost:9200
-#    username: root
-#    password: 123456
-  # 文件上传
-  servlet:
-    multipart:
-      # 大小限制
-      max-file-size: 10MB
+  # rabbitMq 配置
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
+  # 文件上传
+  servlet:
+    multipart:
+      # 大小限制
+      max-file-size: 10MB
 server:
   address: 0.0.0.0
   port: 8101

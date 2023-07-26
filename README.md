@@ -2,57 +2,47 @@
 
 ## 项目技术栈
 
-### 主流框架 & 特性
+### 后端
 
-- Spring Boot 2.7.x（贼新）
-- Spring MVC
-- MyBatis + MyBatis Plus 数据访问（开启分页）
-- Spring Boot 调试工具和项目处理器
-- Spring AOP 切面编程
-- Spring Scheduler 定时任务
-- Spring 事务注解
-
-### 数据存储
-
-- MySQL 数据库
-- Redis 内存数据库
-- Elasticsearch 搜索引擎
-- 腾讯云 COS 对象存储
-
-### 工具类
-
-- Easy Excel 表格处理
-- Hutool 工具库
-- Gson 解析库
-- Apache Commons Lang3 工具类
-- Lombok 注解
-
-### 业务特性
-
-- Spring Session Redis 分布式登录
-- 全局请求响应拦截器（记录日志）
-- 全局异常处理器
-- 自定义错误码
-- 封装通用响应类
+- SpringBoot
+- MySQL
+- Redis
+- MyBatis + MyBatis Plus 数据访问框架
+- 消息队列（RabbitMQ）
+- 限流(实现了分别基于Guava和Redisson的单机和分布式两种限流)
+- AI能力 (Open AI接口 / **[鱼聪明AI SDK](https://www.yucongming.com/dev)** )
+- Easy Excel
 - Swagger + Knife4j 接口文档
-- 自定义权限注解 + 全局校验
-- 全局跨域处理
-- 长整数丢失精度解决
-- 多环境配置
+- Hutool 工具库
 
+### 前端
+
+- React
+- Umi + Ant Design Pro
+- 可视化开发库 (Echarts)
+- Umi openapi 代码生成 
 
 ## 业务功能
+用户（数据分析者）只需要导入最原始的数据集（excel文件），输入想要进行分析的目标（比如帮我分
+析一下网站的增长趋势)，就能利用AI自动生成一个符合要求的图表以及结论。
 
-### 架构设计
+![智能分析](doc/function.png)
+ 
+保留了同步和异步两种方式
 
-- 合理分层
+- **同步**: 用户需要等待AI生成结果
+- **异步**: 上传后即时返回提示，告知用户“您的数据正在分析，请稍后在我的图表页面查看”，提升用户体验
 
+### 流程架构设计
 
-## 快速上手
+- 同步
+  ![同步架构](doc/baseSiteStructure.png)
+- 异步
+  ![异步架构](doc/asyncSiteStructure.png)
 
-> 所有需要修改的地方都标记了 `todo`，便于大家找到修改的位置~
-
-### MySQL 数据库
+## 本地运行
+### [后端](https://gitee.com/anscoder/answerBi-backend) 
+#### MySQL 数据库
 
 1）修改 `application.yml` 的数据库配置为你自己的：
 
@@ -67,9 +57,7 @@ spring:
 
 2）执行 `sql/create_table.sql` 中的数据库语句，自动创建库表
 
-3）启动项目，访问 `http://localhost:8101/api/doc.html` 即可打开接口文档，不需要写前端就能在线调试接口了~
-
-### Redis 分布式登录
+#### Redis 
 
 1）修改 `application.yml` 的 Redis 配置为你自己的：
 
@@ -83,15 +71,7 @@ spring:
     password: 123456
 ```
 
-2）修改 `application.yml` 中的 session 存储方式：
-
-```yml
-spring:
-  session:
-    store-type: redis
-```
-
-3）移除 `MainApplication` 类开头 `@SpringBootApplication` 注解内的 exclude 参数：
+2）移除 `MainApplication` 类开头 `@SpringBootApplication` 注解内的 exclude 参数：
 
 修改前：
 
@@ -105,35 +85,41 @@ spring:
 ```java
 @SpringBootApplication
 ```
-
-### Elasticsearch 搜索引擎
-
-1）修改 `application.yml` 的 Elasticsearch 配置为你自己的：
-
+#### RabbitMq
+1）修改 `application.yml` 的 RabbitMq 配置为你自己的
 ```yml
 spring:
-  elasticsearch:
-    uris: http://localhost:9200
-    username: root
-    password: 123456
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 ```
 
-2）复制 `sql/post_es_mapping.json` 文件中的内容，通过调用 Elasticsearch 的接口或者 Kibana Dev Tools 来创建索引（相当于数据库建表）
+配置完成启动项目，访问 `http://localhost:8101/api/doc.html` 即可打开接口文档
 
+### [前端](https://gitee.com/anscoder/answer-bi-frontend)
+1）执行 npm install 或 yarn 安装依赖
+```shell
+  npm install
 ```
-PUT post_v1
-{
- 参数见 sql/post_es_mapping.json 文件
-}
+或者
+```shell
+yarn
+```
+2）运行项目
+```shell
+yarn run dev
 ```
 
-这步不会操作的话需要补充下 Elasticsearch 的知识，或者自行百度一下~
-
-3）开启同步任务，将数据库的帖子同步到 Elasticsearch
-
-找到 job 目录下的 `FullSyncPostToEs` 和 `IncSyncPostToEs` 文件，取消掉 `@Component` 注解的注释，再次执行程序即可触发同步：
-
-```java
-// todo 取消注释开启任务
-//@Component
-```
+## 后续计划
+- [x] 使用死信队列处理异常情况，将图表生成任务置为失败
+- [x] 引入Guava RateLimiter(单机) 和 Redisson RateLimiter(分布式) 两种限流机制 
+- [x] 支持用户对失败的图表进行手动重试
+- [ ] 图表数据分表存储，提高查询灵活性和性能
+- [ ] 引入redis缓存提高加载速度
+- [ ] 给任务执行增加 guava Retrying重试机制，保证系统可靠性
+- [ ] 定时任务把失败状态的图表放到队列中(补偿机制)
+- [ ] 给任务的执行增加超时时间，超时自动标记为失败(超时控制)
+- [ ] 任务执行结果通过websocket实时通知给用户
+- [ ] 我的图表管理页增加一个刷新、定时刷新的按钮，保证获取到图表的最新状态(前端轮询)

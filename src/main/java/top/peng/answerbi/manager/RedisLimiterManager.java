@@ -12,7 +12,6 @@ import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import top.peng.answerbi.common.ErrorCode;
-import top.peng.answerbi.config.RedissonConfig;
 import top.peng.answerbi.exception.ThrowUtils;
 
 /**
