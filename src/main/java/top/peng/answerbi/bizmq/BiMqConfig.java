@@ -66,7 +66,7 @@ public class BiMqConfig {
                 .to(biExchange())
                 .with(BiMqConstant.BI_ROUTING_KEY);
     }
-    //绑定Bi分析业务队列到Bi分析业务交换机
+    //绑定死信队列到死信交换机
     @Bean
     public Binding DeadLetterBinding(){
         return BindingBuilder

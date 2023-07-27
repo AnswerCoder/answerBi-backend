@@ -3,17 +3,6 @@ package top.peng.answerbi.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import top.peng.answerbi.common.ErrorCode;
-import top.peng.answerbi.constant.CommonConstant;
-import top.peng.answerbi.exception.BusinessException;
-import top.peng.answerbi.mapper.UserMapper;
-import top.peng.answerbi.model.dto.user.UserQueryRequest;
-import top.peng.answerbi.model.entity.User;
-import top.peng.answerbi.model.enums.UserRoleEnum;
-import top.peng.answerbi.model.vo.LoginUserVO;
-import top.peng.answerbi.model.vo.UserVO;
-import top.peng.answerbi.service.UserService;
-import top.peng.answerbi.utils.SqlUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +12,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import top.peng.answerbi.common.ErrorCode;
+import top.peng.answerbi.constant.CommonConstant;
 import top.peng.answerbi.constant.UserConstant;
+import top.peng.answerbi.exception.BusinessException;
+import top.peng.answerbi.mapper.UserMapper;
+import top.peng.answerbi.model.dto.user.UserQueryRequest;
+import top.peng.answerbi.model.entity.User;
+import top.peng.answerbi.model.enums.UserRoleEnum;
+import top.peng.answerbi.model.vo.LoginUserVO;
+import top.peng.answerbi.model.vo.UserVO;
+import top.peng.answerbi.service.UserService;
+import top.peng.answerbi.utils.SqlUtils;
 
 /**
  * 用户服务实现
@@ -60,7 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 账户不能重复
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_account", userAccount);
-            long count = this.baseMapper.selectCount(queryWrapper);
+            long count = this.count(queryWrapper);
             if (count > 0) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
             }
@@ -96,7 +96,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         queryWrapper.eq("user_password", encryptPassword);
-        User user = this.baseMapper.selectOne(queryWrapper);
+        User user = this.getOne(queryWrapper);
         // 用户不存在
         if (user == null) {
             log.info("user login failed, userAccount cannot match userPassword");

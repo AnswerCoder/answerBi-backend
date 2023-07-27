@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0 2023/5/16
  */
 @Configuration
-@MapperScan("top.peng.springbootinit.mapper")
+@MapperScan("top.peng.answerbi.mapper")
 public class MyBatisPlusConfig {
 
     /**
