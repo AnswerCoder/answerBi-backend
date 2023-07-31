@@ -107,6 +107,22 @@ yuapi:
 
 配置完成启动项目，访问 `http://localhost:8101/api/doc.html` 即可打开接口文档
 
+> **ENC加密配置文件中的内容**
+> 
+> 1) 使用EncryptorTest.java对你需要加密的内容加密，获取密文，在配置文件进行替换
+>   ```yaml
+>   spring:
+>     datasource:
+>       password: ENC(加密后的密文)
+>   ```
+> 2) 启动时指定环境变量 ${ENCRYPTOR_PASSWORD}
+> - idea
+> ![启动配置](doc/runConfig.png)
+> - 命令行启动
+> ```shell
+> java -jar answerBi-backend.jar --ENCRYPTOR_PASSWORD=xxx 
+> ```
+
 ### [前端](https://gitee.com/anscoder/answer-bi-frontend)
 1）执行 npm install 或 yarn 安装依赖
 ```shell
@@ -125,8 +141,9 @@ yarn run dev
 - [x] 使用死信队列处理异常情况，将图表生成任务置为失败
 - [x] 引入Guava RateLimiter(单机) 和 Redisson RateLimiter(分布式) 两种限流机制 
 - [x] 支持用户对失败的图表进行手动重试
-- [ ] 图表数据分表存储，提高查询灵活性和性能
 - [x] 引入redis缓存提高加载速度
+- [x] 引入jasypt encryption 对配置文件加密、解密
+- [ ] 图表数据分表存储，提高查询灵活性和性能
 - [ ] 给任务执行增加 guava Retrying重试机制，保证系统可靠性
 - [ ] 定时任务把失败状态的图表放到队列中(补偿机制)
 - [ ] 给任务的执行增加超时时间，超时自动标记为失败(超时控制)

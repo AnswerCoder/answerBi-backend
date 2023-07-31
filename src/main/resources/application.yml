@@ -16,16 +16,16 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/my_db
+    url: jdbc:mysql://localhost:3306/answer_bi
     username: root
-    password: 123456
+    password: ENC(W22KZePz8XkyZFkevBe50CCkRC+72Ql+5JJlrJJs/WKLe6FaZHG/hCL84pgH7Xre)
   # Redis 配置
   redis:
     database: 1
     host: localhost
     port: 6379
     timeout: 5000
-    password: 123456
+    password: ENC(fSQ1SjW1aMVBfbTIO/+FCKgywMK+MfCqJbGxGz6sDpnZaVi1l73H0kpPazxV5Tb7)
   # rabbitMq 配置
   rabbitmq:
     host: localhost
@@ -88,5 +88,9 @@ cos:
 
 yuapi:
   client:
-    access-key: xyjjaiosvyjxfk4t98g0qlrplfijigrz
-    secret-key: q6lppq8sdz587jggbttg35nrsj1iyofl
+    access-key: ENC(v27uTfT5pLqgnpL5glE1dJGChWOzY9ODw/kXrvZ/YO4vbWpyjbI80nclIm2neceZwN7rCiexSFhmrXEu18eZsyfOlU5IfbwFAITBPg/GJ2I=)
+    secret-key: ENC(5Gn5+7922Qg1Ru3VrzVMkX/PdKou6DfzaTKS2tKetd1Z7PXsNY0Pv6GNXIZwzkb2z2+OKU40XKRdPH57Ds/D0p6338kbMUg704Wj8INOWhI=)
+
+jasypt:
+  encryptor:
+    password: ${ENCRYPTOR_PASSWORD}
