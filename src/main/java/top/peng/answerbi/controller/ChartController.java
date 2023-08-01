@@ -283,10 +283,12 @@ public class ChartController {
         boolean saveResult = chartService.save(chart);
         ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
 
+
+
         //创建线程任务
         CompletableFuture.runAsync(() -> {
             //先修改图表任务状态为“执行中”;
-            chartService.updateChartStatus(chart.getId(),BiTaskStatusEnum.RUNNING.getValue(), "");
+            chartService.updateChartStatus(chart.getId(),BiTaskStatusEnum.RUNNING.getValue(), null);
 
             //调用AI
             String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, userInput);
@@ -295,13 +297,17 @@ public class ChartController {
                 biResponse = aiManager.aiAnsToBiResp(aiResult);
             } catch (BusinessException e) {
                 //执行失败，状态修改为“失败”,记录任务失败信息
-                chartService.updateChartStatus(chart.getId(),BiTaskStatusEnum.FAILED.getValue(), e.getMessage());
+                chartService.updateChartStatus(chart.getId(), BiTaskStatusEnum.FAILED.getValue(), "AI生成错误");
                 throw e;
             }
             //执行成功后，修改为“已完成”、保存执行结果
             biResponse.setChartId(chart.getId());
             chartService.updateChartSucceedResult(biResponse);
-        }, threadPoolExecutor);
+        }, threadPoolExecutor).exceptionally((e) -> {
+            log.error("AI生成错误 chartId = {} userId = {} error = {}", chart.getUserId(), chart.getUserId(), e.getMessage());
+            chartService.updateChartStatus(chart.getId(), BiTaskStatusEnum.FAILED.getValue(), "AI生成错误");
+            return null;
+        });
 
         BiResponse biResponse = new BiResponse();
         biResponse.setChartId(chart.getId());

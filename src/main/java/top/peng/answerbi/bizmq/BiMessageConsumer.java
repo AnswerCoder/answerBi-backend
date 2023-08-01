@@ -72,11 +72,10 @@ public class BiMessageConsumer {
             chartService.updateChartStatus(chart.getId(), BiTaskStatusEnum.FAILED.getValue(), "更新图表执行中状态失败");
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图表为空");
         }
-
-        //调用AI
-        String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, BiUtils.buildUserInputForAi(chart));
         BiResponse biResponse;
         try {
+            //调用AI
+            String aiResult = aiManager.doChat(BiConstant.BI_MODEL_ID, BiUtils.buildUserInputForAi(chart));
             biResponse = aiManager.aiAnsToBiResp(aiResult);
         } catch (BusinessException e) {
             channel.basicNack(deliveryTag, false, false);

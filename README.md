@@ -139,13 +139,14 @@ yarn run dev
 
 ## 后续计划
 - [x] 使用死信队列处理异常情况，将图表生成任务置为失败
-- [x] 引入Guava RateLimiter(单机) 和 Redisson RateLimiter(分布式) 两种限流机制 
+- [x] 引入Guava RateLimiter(单机) 和 Redisson RateLimiter(分布式) 两种限流机制 (在请求方法上添加注解即可限流，方便快捷)
 - [x] 支持用户对失败的图表进行手动重试
 - [x] 引入redis缓存提高加载速度
 - [x] 引入jasypt encryption 对配置文件加密、解密
-- [ ] 图表数据分表存储，提高查询灵活性和性能
-- [ ] 给任务执行增加 guava Retrying重试机制，保证系统可靠性
+- [x] 给任务执行增加 guava Retrying重试机制，保证系统可靠性 
+    (guava Retrying 要使用 AttemptTimeLimiters.fixedTimeLimit()设置固定时间的超时限制 时需要 保证 guava版本在22或22以下)
 - [ ] 定时任务把失败状态的图表放到队列中(补偿机制)
 - [ ] 给任务的执行增加超时时间，超时自动标记为失败(超时控制)
+- [ ] 图表数据分表存储，提高查询灵活性和性能
 - [ ] 任务执行结果通过websocket实时通知给用户
 - [ ] 我的图表管理页增加一个刷新、定时刷新的按钮，保证获取到图表的最新状态(前端轮询)

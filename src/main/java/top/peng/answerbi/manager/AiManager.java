@@ -5,11 +5,15 @@
  */
 package top.peng.answerbi.manager;
 
+import com.github.rholder.retry.RetryException;
+import com.github.rholder.retry.Retryer;
 import com.yupi.yucongming.dev.client.YuCongMingClient;
 import com.yupi.yucongming.dev.common.BaseResponse;
 import com.yupi.yucongming.dev.model.DevChatRequest;
 import com.yupi.yucongming.dev.model.DevChatResponse;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.peng.answerbi.common.ErrorCode;
 import top.peng.answerbi.constant.BiConstant;
@@ -24,10 +28,14 @@ import top.peng.answerbi.model.vo.BiResponse;
  * @version 1.0 2023/7/14
  */
 @Service
+@Slf4j
 public class AiManager {
 
     @Resource
     private YuCongMingClient yuCongMingClient;
+
+    @Resource
+    private AiRetryerBuilder aiRetryerBuilder;
 
     /**
      * AI 对话
@@ -41,9 +49,15 @@ public class AiManager {
         devChatRequest.setModelId(modelId);
         devChatRequest.setMessage(message);
 
-        BaseResponse<DevChatResponse> response = yuCongMingClient.doChat(devChatRequest);
+        Retryer<BaseResponse<DevChatResponse>> retryer = aiRetryerBuilder.build();
+        BaseResponse<DevChatResponse> response = null;
+        try {
+            response = retryer.call(() -> yuCongMingClient.doChat(devChatRequest));
+        } catch (ExecutionException | RetryException e) {
+            log.error("调用AI重试 错误: {}", e.getMessage());
+        }
 
-        ThrowUtils.throwIf(response == null, ErrorCode.SYSTEM_ERROR,"AI响应错误");
+        ThrowUtils.throwIf(response == null || response.getData() == null , ErrorCode.SYSTEM_ERROR,"AI响应错误");
 
         return response.getData().getContent();
     }
