@@ -5,6 +5,7 @@
  */
 package top.peng.answerbi.manager;
 
+import cn.hutool.core.util.RandomUtil;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -55,7 +56,7 @@ public class MybatisRedisCacheManager implements Cache {
      */
     @Override
     public void putObject(Object key, Object value) {
-        getRedisTemplate().opsForValue().set(key.toString(), value, EXPIRE_TIME_IN_MINUTES, TimeUnit.MINUTES);
+        getRedisTemplate().opsForValue().set(key.toString(), value, EXPIRE_TIME_IN_MINUTES + RandomUtil.randomInt(10), TimeUnit.MINUTES);
         log.info("Put query result to redis, key={}",key);
     }
 
