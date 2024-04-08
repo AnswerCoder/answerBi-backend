@@ -4,23 +4,25 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/answer_bi
+    url: jdbc:mysql://localhost:13306/answer_bi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
     username: root
-    password: ENC(W22KZePz8XkyZFkevBe50CCkRC+72Ql+5JJlrJJs/WKLe6FaZHG/hCL84pgH7Xre)
+    password: 123456
   # Redis 配置
   redis:
     database: 1
     host: localhost
     port: 6379
     timeout: 5000
-    password: ENC(fSQ1SjW1aMVBfbTIO/+FCKgywMK+MfCqJbGxGz6sDpnZaVi1l73H0kpPazxV5Tb7)
+    password: 123456
     # rabbitMq 配置
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
-mybatis-plus:
-  configuration:
-    # 生产环境关闭日志
-    log-impl: ''
+#mybatis-plus:
+#  configuration:
+#    # 生产环境关闭日志
+#    log-impl: ''
+upload:
+  dir: /dev-ops/my-app/answerBi/upload/

@@ -22,3 +22,6 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+upload:
+  dir: D:/CodesSpaces/myProject/AnsBi/upload

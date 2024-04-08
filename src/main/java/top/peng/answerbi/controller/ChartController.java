@@ -1,14 +1,23 @@
 package top.peng.answerbi.controller;
 
+import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -69,6 +78,8 @@ public class ChartController {
     @Resource
     private BiMessageProducer biMessageProducer;
 
+    @Value("${upload.dir}")
+    private String uploadDir;
     // region 增删改查
 
     /**
@@ -361,6 +372,19 @@ public class ChartController {
         biResponse.setChartId(chartId);
         return ResultUtils.success(biResponse);
     }
+
+    @ApiOperation(value = "上传文件到服务器指定路径")
+    @PostMapping("/uploadtest")
+    public String handleFileUpload(@RequestPart("file") MultipartFile file) throws IOException {
+        if (!file.isEmpty()){
+            String fileName = file.getOriginalFilename();
+            File targetFile = new File(uploadDir, fileName);
+            FileCopyUtils.copy(file.getBytes(),targetFile);
+            return "redirect:/success";
+        }
+        return "redirect:/error";
+    }
+
 
     /**
      * 预处理请求  根据用户输入构建 要存入数据库的 Chart 对象
