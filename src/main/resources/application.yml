@@ -88,8 +88,8 @@ cos:
 
 yuapi:
   client:
-    access-key: ojhebu7ow90w3d9dcpw4s37h17j5kpd3
-    secret-key: bi6ns6acne4sdu357yz5akwvkn3a22nt
+    access-key: ENC(v27uTfT5pLqgnpL5glE1dJGChWOzY9ODw/kXrvZ/YO4vbWpyjbI80nclIm2neceZwN7rCiexSFhmrXEu18eZsyfOlU5IfbwFAITBPg/GJ2I=)
+    secret-key: ENC(5Gn5+7922Qg1Ru3VrzVMkX/PdKou6DfzaTKS2tKetd1Z7PXsNY0Pv6GNXIZwzkb2z2+OKU40XKRdPH57Ds/D0p6338kbMUg704Wj8INOWhI=)
 
 jasypt:
   encryptor:
